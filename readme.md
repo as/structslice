@@ -37,8 +37,8 @@ Package structslice provides an interface for sorting struct slices by their fie
 ```
 
 ## TODO
-####Sort functions should return an error value 
-####Unit tests
-####Recursively sort embedded structs (maybe)
+* Sort functions should return an error value 
+* Unit tests
+* Recursively sort embedded structs (maybe)
 ## Possible GOTCHAS
-####SortByName and SortByIndex are not variadic functions, running a non-stable sort for multiple keys won't work.
+* SortByName and SortByIndex are not variadic functions, running a non-stable sort for multiple keys won't work.
