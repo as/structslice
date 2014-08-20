@@ -4,6 +4,8 @@ Package structslice provides an interface for sorting struct slices by their fie
 ## Quick tour
 
 ```
+	import ss "github.com/as/structslice"
+
 	// Employee is a person who works for a company
 	type Employee struct {
 		ID, Salary int
@@ -35,7 +37,8 @@ Package structslice provides an interface for sorting struct slices by their fie
 ```
 
 ## TODO
-*Recursively sort embedded structs
-*Unit tests
+#Sort functions should return an error value 
+#Unit tests
+#Recursively sort embedded structs (maybe)
 ## Possible GOTCHAS
-*SortByName and SortByIndex are not variadic functions, running a non-stable sort for multiple keys won't work.
+#SortByName and SortByIndex are not variadic functions, running a non-stable sort for multiple keys won't work.
