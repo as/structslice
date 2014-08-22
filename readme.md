@@ -37,7 +37,7 @@ Package structslice provides an interface for sorting struct slices by their fie
 ```
 
 ## TODO
-<del>* Sort functions should return an error value ~~</del>
+* <del>Sort functions should return an error value</del>
 * Unit tests
 * Recursively sort embedded structs (maybe)
 
