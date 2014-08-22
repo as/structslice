@@ -6,6 +6,10 @@ import (
 	"sort"
 )
 
+const (
+	errFieldFmt = "structslice: The field '%s' doesn't exist in struct '%s'"
+)
+
 // structSlice is a control structure for implementing abstract operations
 // on a slice of structs.
 type structSlice struct {
@@ -13,51 +17,18 @@ type structSlice struct {
 	SortFieldIndex int
 }
 
-// SortByName sorts the slice of structs by the field name given by 'n'
-func SortByName(v interface{}, n string) {
-	s := attach(v)
-	f, ok := s.Value.Index(0).Type().FieldByName(n)
-	if !ok {
-		return
-	}
-
-	SortByIndex(v, f.Index[0])
-}
-
-// SortByIndex sorts the slice of structs by the field index 'i'
-func SortByIndex(v interface{}, i int) {
+// sortByIndex sorts the slice of structs by the field index 'i'
+func sortByIndex(v interface{}, i int) {
 	s := attach(v)
 	s.SortFieldIndex = i
 	sort.Sort(s)
 }
 
-// SortStableByName is like SortByName, except it performs a stable sort.
+// sortStableByIndex is like sortByIndex, except it performs a stable sort.
 // Because it performs a stable sort, it accepts a variadic number of sort
 // keys. Sorting is done for every key in the order that the key is passed in
 // to the function.
-func SortStableByName(v interface{}, n ...string) {
-	if len(n) == 0 {
-		return
-	}
-	s := attach(v)
-
-	keys := make([]int, len(n))
-	for i, v := range n {
-		f, ok := s.Value.Index(0).Type().FieldByName(v)
-		if !ok {
-			return
-		}
-		keys[i] = f.Index[0]
-	}
-
-	SortStableByIndex(v, keys...)
-}
-
-// SortStableByIndex is like SortByIndex, except it performs a stable sort.
-// Because it performs a stable sort, it accepts a variadic number of sort
-// keys. Sorting is done for every key in the order that the key is passed in
-// to the function.
-func SortStableByIndex(v interface{}, i ...int) {
+func sortStableByIndex(v interface{}, i ...int) {
 	if len(i) == 0 {
 		return
 	}
@@ -75,32 +46,24 @@ func SortStableByIndex(v interface{}, i ...int) {
 func attach(v interface{}) *structSlice {
 	//panicf panics with a pre-formatted error string
 	panicf := func(f string, s ...interface{}) {
-		panic(fmt.Sprintf("structslice: invalid input on 'v' interface{}, 'v' must be a slice of structs. %s", fmt.Sprintf(f, s)))
+		panic(fmt.Sprintf("structslice: input must be a slice of structs. %s", fmt.Sprintf(f, s)))
 	}
 
 	s := new(structSlice)
 	s.Value = reflect.ValueOf(v)
 
+	vtype := reflect.TypeOf(v)
 	// Test one: Panics if the v interface isn't a slice
-	if t := reflect.TypeOf(s); t.Kind() != reflect.Ptr && (t.Kind() != reflect.Ptr || t.Elem().Kind() != reflect.Slice) {
-		panicf("v's Kind is %v, expected reflect.Slice\n", t.Kind())
+	if vtype.Kind() != reflect.Slice {
+		panicf("expected: [slice], actual: %s\n", vtype.Kind())
 	}
 
 	// Test two: Panics if the elements of v are not structs
-	if reflect.TypeOf(s).Elem().Kind() != reflect.Struct {
-		panicf("v is a slice, but it contains elements of Kind %s, expected reflect.Struct\n", reflect.TypeOf(s).Kind())
+	if vtype.Elem().Kind() != reflect.Struct {
+		panicf("expected: [slice struct], actual: %v\n", vtype.Kind(), vtype.Elem().Kind())
 	}
 
 	return s
-}
-
-// Comparer is an interface for types that can compare themselves to each other.
-type Comparer interface {
-	Less(Comparer) bool
-}
-
-type Stringer interface {
-	String() string
 }
 
 // Less satisfies the sort.Interface type in the go standard library
@@ -122,6 +85,8 @@ func (s structSlice) Less(i, j int) bool {
 		return t && !jv.(bool)
 	case int:
 		return t < jv.(int)
+	case int32:
+		return t < jv.(int32)
 	case int64:
 		return t < jv.(int64)
 	case float64:

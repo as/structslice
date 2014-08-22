@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 )
 
 import (
@@ -72,4 +73,10 @@ func main() {
 	fmt.Println("Sort by Name and Salary (People w/ same salary should be ordered by name)")
 	ss.SortStableByName(internalDB, "Name", "Salary")
 	internalDB.Print()
+
+	if err := ss.SortStableByName(internalDB, "EngineDisplacement"); err != nil {
+		fmt.Println(err)
+		os.Exit(-1)
+	}
+
 }
